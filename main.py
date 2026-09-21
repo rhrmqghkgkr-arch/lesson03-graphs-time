@@ -209,7 +209,54 @@ st.text_area(
 st.divider()
 
 # ============================================================
-# 구역 5. (다음 그래프를 위한 자리 — 추후 추가 예정)
+# 구역 5. 월 × 요일별 일관객 합계 히트맵
 # ============================================================
-st.header("5. 다음 그래프")
+st.header("5. 월 × 요일별 일관객 합계")
+
+weekday_order = ["월", "화", "수", "목", "금", "토", "일"]
+weekday_map = dict(zip(range(7), weekday_order))
+
+heat_df = df.copy()
+heat_df["월"] = heat_df["날짜"].dt.month
+heat_df["요일"] = heat_df["날짜"].dt.dayofweek.map(weekday_map)
+
+pivot = (
+    heat_df.groupby(["요일", "월"])["일관객"]
+    .sum()
+    .unstack("월")
+    .reindex(index=weekday_order)
+    .sort_index(axis=1)
+)
+
+fig5 = go.Figure(
+    data=go.Heatmap(
+        z=pivot.values,
+        x=[f"{m}월" for m in pivot.columns],
+        y=pivot.index,
+        colorscale="YlOrRd",
+        hovertemplate="%{x} %{y}요일<br>합계 관객수: %{z:,}명<extra></extra>",
+        colorbar=dict(title="합계<br>관객수"),
+    )
+)
+
+fig5.update_layout(
+    xaxis_title="월",
+    yaxis_title="요일",
+    margin=dict(l=10, r=10, t=30, b=10),
+)
+
+st.plotly_chart(fig5, use_container_width=True)
+
+st.text_area(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예) 주말(금~일)에 관객수가 뚜렷하게 높고, 특정 월에는 대작 개봉 효과로 평일에도 관객수가 높게 나타난다.",
+    key="insight_5",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 6. (다음 그래프를 위한 자리 — 추후 추가 예정)
+# ============================================================
+st.header("6. 다음 그래프")
 st.info("이 구역에는 다음 시간 관련 그래프가 추가될 예정입니다.")
