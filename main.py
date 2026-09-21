@@ -104,7 +104,112 @@ st.text_area(
 st.divider()
 
 # ============================================================
-# 구역 3. (다음 그래프를 위한 자리 — 추후 추가 예정)
+# 구역 3. 날짜별 TOP10 일관객 합계
 # ============================================================
-st.header("3. 다음 그래프")
+st.header("3. 날짜별 박스오피스 TOP10 일관객 합계")
+
+daily_total = df.groupby("날짜")["일관객"].sum().reset_index()
+top3_days = daily_total.sort_values("일관객", ascending=False).head(3)
+
+fig3 = go.Figure()
+fig3.add_trace(
+    go.Scatter(
+        x=daily_total["날짜"],
+        y=daily_total["일관객"],
+        mode="lines",
+        fill="tozeroy",
+        name="TOP10 일관객 합계",
+        hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계 관객수: %{y:,}명<extra></extra>",
+    )
+)
+
+# 합계가 가장 컸던 3일 표시
+fig3.add_trace(
+    go.Scatter(
+        x=top3_days["날짜"],
+        y=top3_days["일관객"],
+        mode="markers",
+        marker=dict(size=10, color="crimson"),
+        name="합계 TOP 3일",
+        hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계 관객수: %{y:,}명<extra></extra>",
+        showlegend=True,
+    )
+)
+
+for _, row in top3_days.iterrows():
+    fig3.add_annotation(
+        x=row["날짜"],
+        y=row["일관객"],
+        text=row["날짜"].strftime("%Y-%m-%d"),
+        showarrow=True,
+        arrowhead=2,
+        yshift=10,
+    )
+
+fig3.update_layout(
+    xaxis_title="날짜",
+    yaxis_title="TOP10 일관객 합계(명)",
+    hovermode="x unified",
+    margin=dict(l=10, r=10, t=30, b=10),
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.text_area(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예) 대작 영화들이 동시에 개봉하거나 연휴와 겹치는 날짜에 전체 관객수가 급증한다.",
+    key="insight_3",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 4. 누적 일관객 TOP 10 영화
+# ============================================================
+st.header("4. 누적 일관객 TOP 10 영화")
+
+movie_summary = (
+    df.groupby("영화명")
+    .agg(합계관객=("일관객", "sum"), 순위진입일수=("영화명", "count"))
+    .reset_index()
+)
+top10_movies = movie_summary.sort_values("합계관객", ascending=False).head(10)
+# 관객이 많은 영화가 위로 오도록 오름차순으로 정렬해 그린다
+top10_movies = top10_movies.sort_values("합계관객", ascending=True)
+
+fig4 = go.Figure()
+fig4.add_trace(
+    go.Bar(
+        x=top10_movies["합계관객"],
+        y=top10_movies["영화명"],
+        orientation="h",
+        customdata=top10_movies["순위진입일수"],
+        hovertemplate=(
+            "영화: %{y}<br>"
+            "합계 관객수: %{x:,}명<br>"
+            "TOP10 진입 일수: %{customdata}일<extra></extra>"
+        ),
+    )
+)
+
+fig4.update_layout(
+    xaxis_title="합계 관객수(명)",
+    yaxis_title="영화명",
+    margin=dict(l=10, r=10, t=30, b=10),
+)
+
+st.plotly_chart(fig4, use_container_width=True)
+
+st.text_area(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예) 상위권 영화라고 해서 반드시 TOP10 진입 일수가 긴 것은 아니며, 짧은 기간 폭발적으로 흥행한 영화도 있다.",
+    key="insight_4",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 5. (다음 그래프를 위한 자리 — 추후 추가 예정)
+# ============================================================
+st.header("5. 다음 그래프")
 st.info("이 구역에는 다음 시간 관련 그래프가 추가될 예정입니다.")
