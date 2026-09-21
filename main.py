@@ -64,15 +64,47 @@ st.text_area(
 st.divider()
 
 # ============================================================
-# 구역 2. (다음 그래프를 위한 자리 — 추후 추가 예정)
+# 구역 2. 일관객 합계 상위 5편의 날짜별 일일 관객수 비교
 # ============================================================
-st.header("2. 다음 그래프")
-st.info("이 구역에는 다음 시간 관련 그래프가 추가될 예정입니다.")
+st.header("2. 누적 일관객 TOP 5 영화 비교")
+
+top5_titles = (
+    df.groupby("영화명")["일관객"].sum().sort_values(ascending=False).head(5).index.tolist()
+)
+
+fig2 = go.Figure()
+for title in top5_titles:
+    t_df = df[df["영화명"] == title].sort_values("날짜")
+    fig2.add_trace(
+        go.Scatter(
+            x=t_df["날짜"],
+            y=t_df["일관객"],
+            mode="lines",
+            name=title,
+            hovertemplate="날짜: %{x|%Y-%m-%d}<br>일일 관객수: %{y:,}명<extra>%{fullData.name}</extra>",
+        )
+    )
+
+fig2.update_layout(
+    xaxis_title="날짜",
+    yaxis_title="일일 관객수(명)",
+    hovermode="x unified",
+    legend_title_text="영화명 (클릭하여 켜고 끄기)",
+    margin=dict(l=10, r=10, t=30, b=10),
+)
+
+st.plotly_chart(fig2, use_container_width=True)
+
+st.text_area(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예) 상위 5편 중에서도 특정 시기에 관객수가 집중되는 영화가 있고, 흥행 지속 기간에는 큰 차이가 있다.",
+    key="insight_2",
+)
 
 st.divider()
 
 # ============================================================
-# 구역 3. (추가 그래프 자리)
+# 구역 3. (다음 그래프를 위한 자리 — 추후 추가 예정)
 # ============================================================
 st.header("3. 다음 그래프")
-st.info("이 구역에는 또 다른 시간 관련 그래프가 추가될 예정입니다.")
+st.info("이 구역에는 다음 시간 관련 그래프가 추가될 예정입니다.")
